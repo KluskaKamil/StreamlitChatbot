@@ -44,7 +44,8 @@ class ChatBot:
     def chat(self):
         self.display_history()
         models = np.array(['gpt-4o-mini', 'gpt-3.5-turbo', 'gpt-4.1'])
-        model_selected = [st.checkbox('gpt-4', value=True), st.checkbox('gpt-3.5-turbo'), st.checkbox('gpt-4.1')]
+        model_selected = [st.sidebar.checkbox(model, value = True) for model in models]
+        #model_selected = [st.sidebar.checkbox('gpt-4', value=True), st.sidebar.checkbox('gpt-3.5-turbo'), st.sidebar.checkbox('gpt-4.1')]
         
         
         prompt = st.chat_input('Yo!')
