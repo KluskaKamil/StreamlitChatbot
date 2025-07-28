@@ -1,6 +1,8 @@
 import streamlit as st
 from openai import OpenAI
+from openai import AzureOpenAI
 import numpy as np
+
 
 class ChatBot:
     def __init__(self, bot_title):
@@ -39,11 +41,41 @@ class ChatBot:
             return response
         
         
+    def custom_model_respond(self, prompt):
+        
+        endpoint = st.secrets["BSF_ENDPOINT"]
+        api_key = st.secrets["BSF_AZURE_API_KEY"]
+        
+        client = AzureOpenAI(
+            api_version="2024-12-01-preview",
+            azure_endpoint=endpoint,
+            api_key=api_key,
+        )
+        
+        
+        with st.chat_message("assistant"):
+            response = client.chat.completions.create(
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt,
+                }
+            ],
+            max_tokens=4096,
+            temperature=1.0,
+            top_p=1.0,
+            model='gpt-4o'
+        )
+            st.markdown(response.choices[0].message.content)
+            
+        #return response.choices[0].message.content
+        
+        
         
                 
     def chat(self):
         self.display_history()
-        models = np.array(['gpt-4o-mini', 'gpt-3.5-turbo', 'gpt-4.1'])
+        models = np.array(['gpt-4o-mini', 'gpt-3.5-turbo', 'bluesoft'])
         model_selected = [st.sidebar.checkbox(model, value = True) for model in models]
         #model_selected = [st.sidebar.checkbox('gpt-4', value=True), st.sidebar.checkbox('gpt-3.5-turbo'), st.sidebar.checkbox('gpt-4.1')]
         
@@ -60,7 +92,10 @@ class ChatBot:
                 columns = st.columns(col_sum)
                 for col, model in zip(columns, models[model_selected]):
                     with col:
-                        response = self.gpt_respond(model, col_sum)
+                        if model=='bluesoft':
+                            response = self.custom_model_respond(prompt)
+                        else:
+                            response = self.gpt_respond(model, col_sum)
                         
                 st.session_state.msgs.append({"role": "assistant", "content": response, 'col_num':col_sum})
                 
